@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # NOTE: Postgres is intentionally NOT defined here. The real database
+  # runs as a standalone container (named "postgres", started outside
+  # this compose file) with credentials postgres/postgres and its own
+  # anonymous volume. A "postgres" service used to be defined in this
+  # file with DIFFERENT credentials (user/password) and a differently
+  # named volume (postgres_data) — if `docker-compose up` were ever run
+  # while the real container was stopped, it would have silently
+  # started a second, empty Postgres claiming the same port, with none
+  # of your migration history or data. Removed to avoid that.
+  #
+  # If you want Postgres managed by compose going forward, that needs a
+  # deliberate one-time migration: copy data from the real running
+  # container's volume into a new named volume, THEN add a correctly
+  # configured postgres service here pointing at it — not a copy-paste
+  # of defaults.
+
+  redis:
+    image: redis:7-alpine
+    container_name: dominion_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - dominion_network
+
+  backend:
+    build:
+      context: ./gbagada_backend
+      dockerfile: Dockerfile
+    container_name: dominion_backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/dominion_church
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+    volumes:
+      - ./gbagada_backend:/app
+    networks:
+      - dominion_network
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  celery_worker:
+    build:
+      context: ./gbagada_backend
+      dockerfile: Dockerfile
+    container_name: dominion_celery
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/dominion_church
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+    volumes:
+      - ./gbagada_backend:/app
+    networks:
+      - dominion_network
+    command: celery -A src.config.celery worker --loglevel=info
+
+  frontend:
+    build:
+      context: ./gbagada_frontend
+      dockerfile: Dockerfile
+    container_name: dominion_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+    volumes:
+      - ./gbagada_frontend:/app
+      - /app/node_modules
+    networks:
+      - dominion_network
+
+networks:
+  dominion_network:
+    driver: bridge

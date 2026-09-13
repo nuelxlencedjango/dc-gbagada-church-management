@@ -1,0 +1,30 @@
+# Environment secrets — never commit these
+.env
+.env.*
+!.env.example
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Node
+node_modules/
+build/
+dist/
+
+# Uploads (user-generated content, not code)
+gbagada_backend/uploads/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# OS/editor cruft
+.DS_Store
+.vscode/
+.idea/
+
+# Alembic (keep migrations, ignore generated cache if any)
