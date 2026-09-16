@@ -326,7 +326,7 @@ export default function Dashboard() {
   const STATS = [
     {
       label: 'Total Members',
-      display: stats ? stats.totalMembers.toLocaleString() : '—',
+      display: (stats?.totalMembers ?? 0).toLocaleString(),
       delta: stats ? formatDelta(stats.memberGrowthPercent) : '',
       up: stats ? stats.memberGrowthPercent >= 0 : true,
       icon: Users,
@@ -334,7 +334,7 @@ export default function Dashboard() {
     },
     {
       label: 'Active Cells',
-      display: stats ? stats.totalCells.toLocaleString() : '—',
+      display: (stats?.totalCells ?? 0).toLocaleString(),
       delta: stats ? `+${stats.cellsAddedThisQuarter} this qtr` : '',
       up: true,
       icon: UsersRound,
