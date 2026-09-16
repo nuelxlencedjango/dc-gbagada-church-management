@@ -2,13 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime, timedelta
 import os
 
 from src.config.database import get_db
-from src.services.auth import AuthService
+from src.api.middleware.auth import get_current_user
+from src.models.user import User
+from src.models.service import Service
+from src.models.department import Department, DepartmentActivity
+from src.models.announcement import Announcement, AnnouncementType
 from src.services.rag_service import RAGService
 
 router = APIRouter()
+
+_rag_service = RAGService()
+
+MANAGE_ROLES = ['super_admin', 'overall_pastor', 'pastor', 'admin']
 
 class AIQuery(BaseModel):
     question: str
@@ -18,146 +27,206 @@ class AIResponse(BaseModel):
     answer: str
     source: str = "groq_rag"
 
+
+def _build_announcements_context(db: Session, current_user: Optional[User] = None) -> str:
+    """Real announcements from the app's actual Announcements feature —
+    conservatively scoped: public announcements for everyone, plus
+    anything individually targeted at the specific person asking.
+    Cell- and department-targeted announcements are deliberately left
+    out here rather than guessed at, to avoid risking a mismatch that
+    could surface something not meant for that person."""
+    now = datetime.now()
+    query = db.query(Announcement).filter(
+        Announcement.is_published == True,
+        (Announcement.expires_at.is_(None)) | (Announcement.expires_at > now)
+    )
+    if current_user:
+        query = query.filter(
+            (Announcement.announcement_type == AnnouncementType.PUBLIC) |
+            (Announcement.target_user_id == current_user.id)
+        )
+    else:
+        query = query.filter(Announcement.announcement_type == AnnouncementType.PUBLIC)
+
+    announcements = query.order_by(Announcement.priority.desc(), Announcement.published_at.desc()).limit(5).all()
+    if not announcements:
+        return ""
+
+    lines = [f"- {a.title}: {a.content}" for a in announcements]
+    return "Current announcements:\n" + "\n".join(lines)
+
+
+def _build_public_context(db: Session) -> str:
+    """Facts anyone is allowed to know — the same information already
+    visible on the public site or to any logged-in user. Never includes
+    attendance, offerings, or internal department reports."""
+    parts = []
+
+    # Static facts (contact info, location) aren't learned from anywhere
+    # in the app — they only ever lived in the old hardcoded fast-path
+    # answers. Removing the fast-paths without including these here
+    # would leave the AI with genuinely no way to know them at all.
+    static_facts = (
+        f"Dominion City Gbagada is located at Gbagada, Lagos, Nigeria.\n"
+        f"Phone: {os.getenv('CHURCH_PHONE', '+234-XXX-XXX-XXXX')}\n"
+        f"Email: {os.getenv('CHURCH_EMAIL', 'info@dominioncitygbagada.com')}"
+    )
+    parts.append("Contact and location:\n" + static_facts)
+
+    window_start = datetime.now() - timedelta(days=7)
+    services = (
+        db.query(Service)
+        .filter(Service.date >= window_start, Service.is_cancelled == False)
+        .order_by(Service.date.desc())
+        .limit(8)
+        .all()
+    )
+    if services:
+        lines = []
+        for s in services:
+            time_str = s.start_time.strftime("%I:%M %p") if s.start_time else ""
+            theme_str = f" — Theme: {s.theme}" if s.theme else ""
+            lines.append(f"- {s.name} on {s.date.strftime('%A, %B %d %Y')} at {time_str}{theme_str}")
+        parts.append("Recent and upcoming services:\n" + "\n".join(lines))
+
+    departments = db.query(Department).filter(Department.is_active == True).all()
+    if departments:
+        lines = [f"- {d.name}: {d.description}" if d.description else f"- {d.name}" for d in departments]
+        parts.append("Departments at Dominion City Gbagada:\n" + "\n".join(lines))
+
+    return "\n\n".join(parts)
+
+
+def _build_restricted_context(db: Session, current_user: User) -> str:
+    """Everything gated by real permission, mirroring exactly what the
+    person could already see in their own portal: internal department
+    reports (own department for a head, all for admin-tier), each
+    department's member roster (same access boundary), and — admin/
+    pastor only — the overall church membership count, matching the
+    same gate already used on the admin Dashboard's stat card."""
+    parts = []
+
+    if current_user.role in MANAGE_ROLES:
+        depts = db.query(Department).filter(Department.is_active == True).all()
+        from src.models.member import Member
+        total_members = db.query(Member).filter(Member.membership_status == "active").count()
+        parts.append(f"Total active church members: {total_members}")
+    else:
+        depts = db.query(Department).filter(
+            (Department.head_id == current_user.id) | (Department.assistant_head_id == current_user.id)
+        ).all()
+
+    if not depts:
+        return "\n\n".join(parts)
+
+    dept_ids = [d.id for d in depts]
+    dept_names = {d.id: d.name for d in depts}
+
+    # Member rosters — same access boundary as the reports below: a
+    # department head only ever sees their own department's list,
+    # exactly matching their portal's Members tab.
+    roster_lines = []
+    for d in depts:
+        names = [m.first_name + " " + m.last_name for m in d.members]
+        if names:
+            roster_lines.append(f"- {d.name} ({len(names)} members): " + ", ".join(names))
+    if roster_lines:
+        parts.append("Department member rosters:\n" + "\n".join(roster_lines))
+
+    activities = (
+        db.query(DepartmentActivity)
+        .filter(DepartmentActivity.department_id.in_(dept_ids))
+        .order_by(DepartmentActivity.week_start_date.desc())
+        .limit(5)
+        .all()
+    )
+    if activities:
+        lines = []
+        for a in activities:
+            dept_name = dept_names.get(a.department_id, "Unknown Department")
+            week = a.week_start_date.strftime("%B %d, %Y")
+            details = []
+            if a.achievements:
+                details.append(f"Achievements: {a.achievements}")
+            if a.challenges:
+                details.append(f"Challenges: {a.challenges}")
+            if a.prayer_requests:
+                details.append(f"Prayer requests: {a.prayer_requests}")
+            lines.append(f"- {dept_name}, week of {week}: " + "; ".join(details))
+
+        if current_user.role in MANAGE_ROLES:
+            header = "Internal department reports across all departments (you have admin-level oversight access):\n"
+        else:
+            own_names = ", ".join(dept_names.values())
+            header = f"Internal reports for the department(s) {current_user.full_name} personally heads ({own_names}):\n"
+
+        parts.append(header + "\n".join(lines))
+
+    return "\n\n".join(parts)
+
+
 @router.post("/chat", response_model=AIResponse)
 async def chat_with_ai(
     query: AIQuery,
-    token: str,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Chat with the AI assistant using Groq"""
-    auth_service = AuthService(db)
-    user = auth_service.get_current_user(token)
-    
-    rag_service = RAGService()
-    
-    # Get user context
-    user_context = {
-        "role": user.role,
-        "name": user.full_name,
-        "user_id": user.id
-    }
-    
-    # Check if query is about church info (fast path)
-    query_lower = query.question.lower()
-    
-    # Fast path for common queries (no RAG needed)
-    if "service time" in query_lower or "service times" in query_lower:
-        return AIResponse(
-            answer="Sunday services are at 9 AM and 11 AM. Tuesday prayer meeting is at 6 PM.",
-            source="system"
-        )
-    elif "contact" in query_lower or "phone" in query_lower:
-        return AIResponse(
-            answer=f"You can reach us at {os.getenv('CHURCH_PHONE', '+234-XXX-XXX-XXXX')} or email {os.getenv('CHURCH_EMAIL', 'info@dominioncitygbagada.com')}",
-            source="system"
-        )
-    elif "pastor" in query_lower:
-        return AIResponse(
-            answer="Our Branch Pastor is available for guidance and support. Please contact the church office for an appointment.",
-            source="system"
-        )
-    elif "location" in query_lower or "address" in query_lower:
-        return AIResponse(
-            answer="Dominion City Gbagada is located at Gbagada, Lagos, Nigeria.",
-            source="system"
-        )
-    
-    # For complex queries, use RAG with Groq
+    """Every question goes through the real pipeline now — live
+    Gbagada data, HQ background, and Groq's own understanding of the
+    phrasing. No keyword pre-matching: it can't anticipate every way
+    someone might ask, and worse, it was overriding accurate live data
+    (e.g. a hardcoded service time) with stale hardcoded answers."""
+    user_context = {"role": current_user.role, "name": current_user.full_name, "user_id": current_user.id}
+
+    live_context = _build_public_context(db)
+    announcements_context = _build_announcements_context(db, current_user)
+    if announcements_context:
+        live_context = f"{live_context}\n\n{announcements_context}" if live_context else announcements_context
+    restricted = _build_restricted_context(db, current_user)
+    if restricted:
+        live_context = f"{live_context}\n\n{restricted}" if live_context else restricted
+
     try:
-        answer = rag_service.query(query.question, user_context)
+        answer = _rag_service.query(query.question, user_context, live_context=live_context)
         return AIResponse(answer=answer, source="groq_rag")
     except Exception as e:
         print(f"AI Error: {e}")
-        return AIResponse(
-            answer="I apologize, but I'm having trouble answering that right now. Please try again later or contact the church office.",
-            source="error"
-        )
+        return AIResponse(answer="I apologize, but I'm having trouble answering that right now. Please try again later or contact the church office.", source="error")
+
 
 @router.post("/update-knowledge")
-async def update_knowledge(
-    token: str,
-    db: Session = Depends(get_db)
-):
-    """Update the AI's knowledge from church sources"""
-    auth_service = AuthService(db)
-    user = auth_service.get_current_user(token)
-    
-    # Only admins can update knowledge
-    if user.role not in ["admin", "super_admin", "pastor"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins and pastors can update the knowledge base"
-        )
-    
-    rag_service = RAGService()
-    
-    # Scrape HQ website
-    hq_success = rag_service.scrape_church_hq()
-    
-    return {
-        "message": "Knowledge base updated successfully",
-        "hq_website_scraped": hq_success,
-        "status": "completed"
-    }
+async def update_knowledge(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if current_user.role not in MANAGE_ROLES:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins and pastors can update the knowledge base")
+    hq_success = _rag_service.scrape_church_hq()
+    return {"message": "Knowledge base updated successfully", "hq_website_scraped": hq_success, "status": "completed"}
+
 
 @router.get("/church-info")
 async def get_church_info(info_type: str):
-    """Get specific church information"""
-    rag_service = RAGService()
-    info = rag_service.get_church_info(info_type)
-    return {"info": info}
+    return {"info": _rag_service.get_church_info(info_type)}
+
+
 @router.post("/public-chat")
-async def public_chat(query: AIQuery):
-    """Public AI chat - No authentication required"""
-    rag_service = RAGService()
-    
-    # Check if query is about church info (fast path)
-    query_lower = query.question.lower()
-    
-    # Fast path for common queries (no RAG needed)
-    if "service time" in query_lower or "service times" in query_lower:
-        return AIResponse(
-            answer="Sunday services are at 9 AM and 11 AM. Tuesday prayer meeting is at 6 PM.",
-            source="system"
-        )
-    elif "contact" in query_lower or "phone" in query_lower:
-        return AIResponse(
-            answer=f"You can reach us at {os.getenv('CHURCH_PHONE', '+234-XXX-XXX-XXXX')} or email {os.getenv('CHURCH_EMAIL', 'info@dominioncitygbagada.com')}",
-            source="system"
-        )
-    elif "pastor" in query_lower:
-        return AIResponse(
-            answer="Our Branch Pastor is available for guidance and support. Please contact the church office for an appointment.",
-            source="system"
-        )
-    elif "location" in query_lower or "address" in query_lower:
-        return AIResponse(
-            answer="Dominion City Gbagada is located at Gbagada, Lagos, Nigeria.",
-            source="system"
-        )
-    elif "join" in query_lower or "member" in query_lower or "membership" in query_lower:
-        return AIResponse(
-            answer="To become a member of Dominion City Gbagada, please click the 'Join Our Family' button on our website or visit us at our church location. We would love to welcome you!",
-            source="system"
-        )
-    elif "prayer" in query_lower:
-        return AIResponse(
-            answer="We have prayer meetings every Tuesday at 6 PM. You can also submit prayer requests through our website or contact the church office.",
-            source="system"
-        )
-    elif "announcement" in query_lower:
-        return AIResponse(
-            answer="Please check our Announcements section on the website for the latest church news and events.",
-            source="system"
-        )
-    
-    # For complex queries, use RAG
+async def public_chat(query: AIQuery, db: Session = Depends(get_db)):
+    """No authentication — never calls _build_restricted_context.
+    Same real pipeline as /chat, just with only the public tier of
+    live context available."""
+    live_context = _build_public_context(db)
+    announcements_context = _build_announcements_context(db, None)
+    if announcements_context:
+        live_context = f"{live_context}\n\n{announcements_context}" if live_context else announcements_context
+
     try:
-        answer = rag_service.query(query.question, None)
+        answer = _rag_service.query(query.question, None, live_context=live_context)
         return AIResponse(answer=answer, source="groq_rag")
     except Exception as e:
         print(f"AI Error: {e}")
-        return AIResponse(
-            answer="I apologize, but I'm having trouble answering that right now. Please try again later or contact the church office directly.",
-            source="error"
-        )
+        return AIResponse(answer="I apologize, but I'm having trouble answering that right now. Please try again later or contact the church office directly.", source="error")
+
+
+
+
+
+
+
