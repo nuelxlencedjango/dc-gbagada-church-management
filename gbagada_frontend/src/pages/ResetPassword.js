@@ -7,7 +7,7 @@ import { LockReset } from '@mui/icons-material';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();

@@ -9,7 +9,7 @@ import { PersonAdd, PhotoCamera } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const Register = () => {
   const [activeStep, setActiveStep] = useState(0);

@@ -7,7 +7,7 @@ import CellLeaderDashboard from './cell-leader/Dashboard';
 import PastorDashboard from './pastor/Dashboard';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const PORTAL_LABELS = {
   department_head: 'Department Head',

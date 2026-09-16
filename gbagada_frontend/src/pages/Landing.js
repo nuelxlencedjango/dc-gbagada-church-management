@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import PublicAIChat from '../components/PublicAIChat';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const Landing = () => {
   const [announcements, setAnnouncements] = useState([]);
