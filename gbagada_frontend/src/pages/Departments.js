@@ -33,7 +33,7 @@ const Departments = () => {
     name: '',
     description: ''
   });
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchDepartments();
   }, []);

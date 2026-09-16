@@ -35,6 +35,7 @@ const CreateUserForMember = () => {
     { value: 'member', label: 'Member' }
   ];
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchMember();
   }, [memberId]);
