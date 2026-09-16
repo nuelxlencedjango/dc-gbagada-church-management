@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2, Users, ClipboardList, CalendarDays, HandCoins,
-  LifeBuoy, LogOut, Search, Menu as MenuIcon, Plus, Trash2,
+  LifeBuoy, LogOut, Menu as MenuIcon, Plus, Trash2,
   Phone, MapPin, PhoneCall, Settings as SettingsIcon, DollarSign, Megaphone,
   Baby, Wallet
 } from 'lucide-react';

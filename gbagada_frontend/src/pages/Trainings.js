@@ -5,11 +5,11 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, TextField,
   FormControl, InputLabel, Select, MenuItem, Snackbar, Alert,
   CircularProgress, Grid, Tooltip, Card, CardContent, Avatar, List,
-  ListItem, ListItemText, ListItemSecondaryAction
+  ListItem, ListItemText
 } from '@mui/material';
 import {
   Add, Edit, Delete, CheckCircle, PersonAdd, School,
-  EventAvailable, People, Close, HighlightOff
+  EventAvailable, People, HighlightOff
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { useLocation } from 'react-router-dom';

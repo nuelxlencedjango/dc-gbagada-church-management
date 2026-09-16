@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import {
   Search, Add, Edit, Delete, Event, AccessTime, CalendarToday,
-  Person, AttachMoney, CheckCircle, Cancel, Visibility
+  AttachMoney,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -396,9 +396,9 @@ const Services = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{service.name}</Typography>
                     <Chip
-                      label={service.is_cancelled ? 'Cancelled' : 'Scheduled'}
+                      label={service.is_cancelled ? 'Cancelled' : 'Scheduled'} 
                       size="small"
-                      color={service.is_cancelled ? 'error' : 'success'}
+                      color={service.is_cancelled ? 'error' : 'success'} 
                     />
                   </Box>
                   <Typography variant="caption" display="block" color="textSecondary">
@@ -528,9 +528,9 @@ const Services = () => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={service.is_cancelled ? 'Cancelled' : 'Scheduled'}
+                        label={service.is_cancelled ? 'Cancelled' : 'Scheduled'} 
                         size="small"
-                        color={service.is_cancelled ? 'error' : 'success'}
+                        color={service.is_cancelled ? 'error' : 'success'} 
                       />
                     </TableCell>
                     <TableCell align="right">
@@ -747,7 +747,7 @@ const Services = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog}>Cancel</Button> 
           <Button onClick={handleSubmit} variant="contained" sx={{ backgroundColor: '#1a237e' }}>
             {editingService ? 'Update' : 'Add'}
           </Button>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Typography, Box, Paper, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, IconButton, Chip,
+  TableHead, TableRow, IconButton, Chip,
   TextField, InputAdornment, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, Grid, Snackbar, Alert, CircularProgress, useTheme,
-  useMediaQuery, MenuItem, FormControl, InputLabel, Select, Tooltip,
+  useMediaQuery, MenuItem, FormControl, InputLabel, Select,
   Checkbox, FormControlLabel, Avatar
 } from '@mui/material';
 import {
@@ -28,7 +28,6 @@ const getErrorMessage = (error) => {
 const ChildrenDepartment = () => {
   const { token } = useAuth();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [view, setView] = useState('classes'); // 'classes' | 'detail'
   const [classes, setClasses] = useState([]);
@@ -69,9 +68,7 @@ const ChildrenDepartment = () => {
   useEffect(() => {
     fetchClasses();
     fetchDepartments();
-    // Teacher/Assistant options now load per-department, when the class
-    // dialog opens — not globally on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   const showSnackbar = (message, severity) => setSnackbar({ open: true, message, severity });
