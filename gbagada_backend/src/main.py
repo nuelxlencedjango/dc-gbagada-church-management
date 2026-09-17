@@ -70,10 +70,11 @@ Base.metadata.create_all(bind=engine)
 
 # ========== CREATE FASTAPI APP ==========
 app = FastAPI(
+    redirect_slashes=False,
     title="Dominion City Gbagada Church Management API",
     description="A comprehensive church management system",
     version="1.0.0",
-    redirect_slashes=False
+   
 )
 
 # ========== CORS ==========
