@@ -289,13 +289,13 @@ export default function Dashboard() {
       }
 
       if (growthResult.status === 'fulfilled') {
-        setGrowthData(growthResult.value.data);
+        setGrowthData(Array.isArray(growthResult.value.data) ? growthResult.value.data : []);
       } else {
         console.error('Error fetching member growth:', growthResult.reason);
       }
 
       if (offeringResult.status === 'fulfilled') {
-        setOfferingData(offeringResult.value.data);
+        setOfferingData(Array.isArray(offeringResult.value.data) ? offeringResult.value.data : []);
       } else {
         console.error('Error fetching offering trends:', offeringResult.reason);
       }
@@ -361,8 +361,8 @@ export default function Dashboard() {
   ];
 
   const chartData = chartTab === 'growth'
-    ? growthData.map(d => ({ month: d.month, value: d.members }))
-    : offeringData.map(d => ({ month: d.month, value: d.offerings / 1_000_000 })); // millions, matching original axis scale
+    ? (Array.isArray(growthData) ? growthData : []).map(d => ({ month: d.month, value: d.members }))
+    : (Array.isArray(offeringData) ? offeringData : []).map(d => ({ month: d.month, value: d.offerings / 1_000_000 })); // millions, matching original axis scale
 
   const chartColor = tokens.indigoLight;
 
