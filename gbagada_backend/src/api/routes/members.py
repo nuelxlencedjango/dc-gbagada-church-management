@@ -101,6 +101,7 @@ async def get_upcoming_birthdays(
     upcoming.sort(key=lambda x: x["days_until"])
     return upcoming
 
+@router.get("", response_model=List[MemberResponse])
 @router.get("/", response_model=List[MemberResponse])
 async def get_members(
     skip: int = Query(0, ge=0),
@@ -157,6 +158,7 @@ async def get_members(
     
     return result
 
+@router.post("", response_model=MemberResponse)
 @router.post("/", response_model=MemberResponse)
 async def create_member(
     member_data: MemberCreate,
