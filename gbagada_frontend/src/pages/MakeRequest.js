@@ -8,6 +8,8 @@ import { Send, RequestQuote } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (typeof err === 'string') return err;
@@ -53,7 +55,7 @@ const MakeRequest = () => {
         purpose: formData.purpose,
         date_needed: new Date(formData.date_needed).toISOString(),
       };
-      await axios.post('/api/requests/', payload, {
+      await axios.post(`${API_URL}/requests/`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSnackbar({ open: true, message: 'Request submitted successfully!', severity: 'success' });

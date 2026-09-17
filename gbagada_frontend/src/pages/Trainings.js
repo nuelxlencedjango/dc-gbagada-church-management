@@ -16,6 +16,8 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (typeof err === 'string') return err;
@@ -106,7 +108,7 @@ const Trainings = () => {
       const params = new URLSearchParams();
       if (filterType) params.append('training_type', filterType);
       if (filterStatus) params.append('status', filterStatus);
-      const res = await axios.get(`/api/trainings/?${params.toString()}`, {
+      const res = await axios.get(`${API_URL}/trainings/?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTrainings(res.data);
@@ -119,7 +121,7 @@ const Trainings = () => {
 
   const fetchOverview = async () => {
     try {
-      const res = await axios.get('/api/trainings/overview', {
+      const res = await axios.get(`${API_URL}/trainings/overview`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOverview(res.data);
@@ -130,7 +132,7 @@ const Trainings = () => {
 
   const fetchMembers = async () => {
     try {
-      const res = await axios.get('/api/members/', {
+      const res = await axios.get(`${API_URL}/members/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       let membersData = res.data;
@@ -145,7 +147,7 @@ const Trainings = () => {
 
   const fetchMvps = async () => {
     try {
-      const res = await axios.get('/api/mvps/', {
+      const res = await axios.get(`${API_URL}/mvps/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMvps(res.data);
@@ -202,12 +204,12 @@ const Trainings = () => {
         max_capacity: formData.max_capacity ? parseInt(formData.max_capacity) : null,
       };
       if (editingTraining) {
-        await axios.put(`/api/trainings/${editingTraining.id}`, payload, {
+        await axios.put(`${API_URL}/trainings/${editingTraining.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Training updated', 'success');
       } else {
-        await axios.post('/api/trainings/', payload, {
+        await axios.post(`${API_URL}/trainings/`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Training created', 'success');
@@ -223,7 +225,7 @@ const Trainings = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this training?')) {
       try {
-        await axios.delete(`/api/trainings/${id}`, {
+        await axios.delete(`${API_URL}/trainings/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Training deleted', 'success');
@@ -246,7 +248,7 @@ const Trainings = () => {
 
   const handleRegister = async () => {
     try {
-      await axios.post(`/api/trainings/${selectedTraining.id}/register`, registerData, {
+      await axios.post(`${API_URL}/trainings/${selectedTraining.id}/register`, registerData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       showSnackbar('Registered successfully', 'success');
@@ -263,7 +265,7 @@ const Trainings = () => {
     setOpenAttendeesDialog(true);
     setLoadingAttendees(true);
     try {
-      const res = await axios.get(`/api/trainings/${training.id}/attendees`, {
+      const res = await axios.get(`${API_URL}/trainings/${training.id}/attendees`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttendees(res.data);

@@ -13,6 +13,8 @@ import {
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (typeof err === 'string') return err;
@@ -44,7 +46,7 @@ const TrainingOverview = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/trainings/stats', {
+      const res = await axios.get(`${API_URL}/trainings/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);

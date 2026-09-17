@@ -7,6 +7,8 @@ import {
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const tokens = {
   ink: '#0B1030', ink2: '#141B4D', indigo: '#1E2B7A', indigoLight: '#2E3FA0',
   gold: '#C9A227', goldSoft: '#F6ECC9', canvas: '#F3F4F8', surface: '#FFFFFF',
@@ -76,7 +78,7 @@ export default function PastorDashboard() {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/pastor-portal/my-profile', { headers });
+      const res = await axios.get(`${API_URL}/pastor-portal/my-profile`, { headers });
       setPastor(res.data);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -87,42 +89,42 @@ export default function PastorDashboard() {
 
   const fetchReports = async () => {
     try {
-      const res = await axios.get('/api/pastor-portal/my-profile/reports', { headers });
+      const res = await axios.get(`${API_URL}/pastor-portal/my-profile/reports`, { headers });
       setReports(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchAnnouncements = async () => {
     try {
-      const res = await axios.get('/api/announcements/', { headers });
+      const res = await axios.get(`${API_URL}/announcements/`, { headers });
       setAnnouncements(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchPrograms = async () => {
     try {
-      const res = await axios.get('/api/pastor-portal/my-profile/programs', { headers });
+      const res = await axios.get(`${API_URL}/pastor-portal/my-profile/programs`, { headers });
       setPrograms(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchContributions = async () => {
     try {
-      const res = await axios.get('/api/pastor-portal/my-profile/contributions', { headers });
+      const res = await axios.get(`${API_URL}/pastor-portal/my-profile/contributions`, { headers });
       setContributions(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchMyRequests = async () => {
     try {
-      const res = await axios.get('/api/requests/', { headers });
+      const res = await axios.get(`${API_URL}/requests/`, { headers });
       setMyRequests(res.data.filter(r => r.requested_by_id === user?.id));
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchMyHelpRequests = async () => {
     try {
-      const res = await axios.get('/api/pastor-portal/my-profile/help-requests', { headers });
+      const res = await axios.get(`${API_URL}/pastor-portal/my-profile/help-requests`, { headers });
       setMyHelpRequests(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
@@ -135,7 +137,7 @@ export default function PastorDashboard() {
 
   const fetchAccountProfile = async () => {
     try {
-      const res = await axios.get('/api/users/me', { headers });
+      const res = await axios.get(`${API_URL}/users/me`, { headers });
       setProfileForm({
         full_name: res.data.full_name || '',
         email: res.data.email || '',
@@ -147,7 +149,7 @@ export default function PastorDashboard() {
   const saveProfile = async () => {
     setSavingProfile(true);
     try {
-      await axios.put('/api/users/me', profileForm, { headers });
+      await axios.put(`${API_URL}/users/me`, profileForm, { headers });
       showToast('Profile updated');
     } catch (err) { showToast(getErrorMessage(err)); }
     finally { setSavingProfile(false); }
@@ -158,7 +160,7 @@ export default function PastorDashboard() {
     if (passwordForm.new_password !== passwordForm.confirm_password) { showToast('New passwords do not match'); return; }
     setSavingPassword(true);
     try {
-      await axios.post('/api/users/me/change-password', {
+      await axios.post(`${API_URL}/users/me/change-password`, {
         current_password: passwordForm.current_password,
         new_password: passwordForm.new_password,
       }, { headers });
@@ -182,7 +184,7 @@ export default function PastorDashboard() {
   });
   const submitReport = async () => {
     try {
-      await axios.post('/api/pastor-portal/my-profile/reports', reportForm, { headers });
+      await axios.post(`${API_URL}/pastor-portal/my-profile/reports`, reportForm, { headers });
       showToast('Report sent to admin');
       setReportForm({ week_start_date: new Date().toISOString().split('T')[0], activities_performed: '', challenges: '', achievements: '', prayer_requests: '', report: '' });
       fetchReports();
@@ -194,7 +196,7 @@ export default function PastorDashboard() {
   const submitProgram = async () => {
     if (!programForm.title || !programForm.program_date) { showToast('Title and date are required'); return; }
     try {
-      await axios.post('/api/pastor-portal/my-profile/programs', programForm, { headers });
+      await axios.post(`${API_URL}/pastor-portal/my-profile/programs`, programForm, { headers });
       showToast('Program recorded');
       setProgramForm({ title: '', description: '', program_date: '', program_time: '', location: '' });
       fetchPrograms();
@@ -206,7 +208,7 @@ export default function PastorDashboard() {
   const submitContribution = async () => {
     if (!contribForm.amount || !contribForm.contribution_date) { showToast('Amount and date are required'); return; }
     try {
-      await axios.post('/api/pastor-portal/my-profile/contributions', {
+      await axios.post(`${API_URL}/pastor-portal/my-profile/contributions`, {
         ...contribForm,
         amount: parseFloat(contribForm.amount),
       }, { headers });
@@ -221,7 +223,7 @@ export default function PastorDashboard() {
   const submitRequest = async () => {
     if (!requestForm.amount || !requestForm.description) { showToast('Amount and description are required'); return; }
     try {
-      await axios.post('/api/requests/', {
+      await axios.post(`${API_URL}/requests/`, {
         amount: parseFloat(requestForm.amount),
         purpose: requestForm.purpose,
         description: requestForm.description,
@@ -238,7 +240,7 @@ export default function PastorDashboard() {
   const submitHelp = async () => {
     if (!helpForm.description) { showToast('Please describe the issue'); return; }
     try {
-      await axios.post('/api/pastor-portal/my-profile/help-requests', helpForm, { headers });
+      await axios.post(`${API_URL}/pastor-portal/my-profile/help-requests`, helpForm, { headers });
       showToast('Sent to admin');
       setHelpForm({ description: '' });
       fetchMyHelpRequests();

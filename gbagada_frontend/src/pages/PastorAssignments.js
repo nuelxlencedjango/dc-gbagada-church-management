@@ -7,6 +7,8 @@ import { Church, PersonOff } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const PastorAssignments = () => {
   const { token } = useAuth();
   const [pastors, setPastors] = useState([]);
@@ -20,7 +22,7 @@ const PastorAssignments = () => {
   const fetchPastors = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/pastors/', {
+      const res = await axios.get(`${API_URL}/pastors/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPastors(res.data);

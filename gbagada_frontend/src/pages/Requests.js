@@ -8,6 +8,8 @@ import { Search, CheckCircle, Cancel, Payments } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (err.response?.data?.detail) {
@@ -47,7 +49,7 @@ const Requests = () => {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/requests/', { headers });
+      const res = await axios.get(`${API_URL}/requests/`, { headers });
       setRequests(res.data);
     } catch (err) {
       showSnackbar(getErrorMessage(err), 'error');
@@ -60,7 +62,7 @@ const Requests = () => {
 
   const handleApprove = async (id) => {
     try {
-      await axios.post(`/api/requests/${id}/approve`, {}, { headers });
+      await axios.post(`${API_URL}/requests/${id}/approve`, {}, { headers });
       showSnackbar('Request approved');
       fetchRequests();
     } catch (err) { showSnackbar(getErrorMessage(err), 'error'); }
@@ -69,7 +71,7 @@ const Requests = () => {
   const handleReject = async (id) => {
     if (!window.confirm('Reject this request?')) return;
     try {
-      await axios.post(`/api/requests/${id}/reject`, {}, { headers });
+      await axios.post(`${API_URL}/requests/${id}/reject`, {}, { headers });
       showSnackbar('Request rejected');
       fetchRequests();
     } catch (err) { showSnackbar(getErrorMessage(err), 'error'); }
@@ -78,7 +80,7 @@ const Requests = () => {
   const handleDisburse = async (id) => {
     if (!window.confirm('Confirm funds have been disbursed for this request?')) return;
     try {
-      await axios.post(`/api/requests/${id}/disburse`, {}, { headers });
+      await axios.post(`${API_URL}/requests/${id}/disburse`, {}, { headers });
       showSnackbar('Funds disbursed');
       fetchRequests();
     } catch (err) { showSnackbar(getErrorMessage(err), 'error'); }

@@ -7,6 +7,8 @@ import { Person, Lock, Save } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (typeof err === 'string') return err;
@@ -53,7 +55,7 @@ const Settings = () => {
   const fetchMe = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/users/me', {
+      const res = await axios.get(`${API_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProfileData({
@@ -75,7 +77,7 @@ const Settings = () => {
   const handleSaveProfile = async () => {
     setSavingProfile(true);
     try {
-      await axios.put('/api/users/me', profileData, {
+      await axios.put(`${API_URL}/users/me`, profileData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       showSnackbar('Profile updated successfully', 'success');
@@ -106,7 +108,7 @@ const Settings = () => {
     setPasswordErrors({});
     setSavingPassword(true);
     try {
-      await axios.post('/api/users/me/change-password', {
+      await axios.post(`${API_URL}/users/me/change-password`, {
         current_password: passwordData.current_password,
         new_password: passwordData.new_password,
       }, {

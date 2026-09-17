@@ -13,6 +13,8 @@ import {
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (typeof err === 'string') return err;
@@ -75,7 +77,7 @@ const MVPs = () => {
     try {
       const params = new URLSearchParams();
       if (filterStatus) params.append('status', filterStatus);
-      const res = await axios.get(`/api/mvps/?${params.toString()}`, {
+      const res = await axios.get(`${API_URL}/mvps/?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMvps(res.data);
@@ -88,7 +90,7 @@ const MVPs = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get('/api/mvps/stats', {
+      const res = await axios.get(`${API_URL}/mvps/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);
@@ -99,7 +101,7 @@ const MVPs = () => {
 
   const fetchMembers = async () => {
     try {
-      const res = await axios.get('/api/members/', {
+      const res = await axios.get(`${API_URL}/members/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       let membersData = res.data;
@@ -114,7 +116,7 @@ const MVPs = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('/api/users/all', {
+      const res = await axios.get(`${API_URL}/users/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       let usersData = res.data;
@@ -173,12 +175,12 @@ const MVPs = () => {
       const payload = { ...formData };
       if (payload.assigned_to_id === '') payload.assigned_to_id = null;
       if (editingMvp) {
-        await axios.put(`/api/mvps/${editingMvp.id}`, payload, {
+        await axios.put(`${API_URL}/mvps/${editingMvp.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('MVP updated', 'success');
       } else {
-        await axios.post('/api/mvps/', payload, {
+        await axios.post(`${API_URL}/mvps/`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('MVP created', 'success');
@@ -194,7 +196,7 @@ const MVPs = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this MVP?')) {
       try {
-        await axios.delete(`/api/mvps/${id}`, {
+        await axios.delete(`${API_URL}/mvps/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('MVP deleted', 'success');
@@ -218,7 +220,7 @@ const MVPs = () => {
       return;
     }
     try {
-      await axios.post(`/api/mvps/${selectedMvp.id}/convert?member_id=${selectedMemberId}`, {}, {
+      await axios.post(`${API_URL}/mvps/${selectedMvp.id}/convert?member_id=${selectedMemberId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       showSnackbar('MVP converted to member successfully', 'success');

@@ -10,6 +10,8 @@ import { Add, Edit, Delete, AccountBalance } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (typeof err === 'string') return err;
@@ -51,7 +53,7 @@ const Budget = () => {
 
   const fetchBudgets = async () => {
     try {
-      const response = await axios.get('/api/budget/', {
+      const response = await axios.get(`${API_URL}/budget/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBudgets(response.data);
@@ -64,7 +66,7 @@ const Budget = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await axios.get('/api/departments/', {
+      const response = await axios.get(`${API_URL}/departments/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDepartments(response.data);
@@ -111,12 +113,12 @@ const Budget = () => {
       };
 
       if (editingBudget) {
-        await axios.put(`/api/budget/${editingBudget.id}`, payload, {
+        await axios.put(`${API_URL}/budget/${editingBudget.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Budget updated successfully', 'success');
       } else {
-        await axios.post('/api/budget/', payload, {
+        await axios.post(`${API_URL}/budget/`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Budget created successfully', 'success');
@@ -131,7 +133,7 @@ const Budget = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this budget?')) {
       try {
-        await axios.delete(`/api/budget/${id}`, {
+        await axios.delete(`${API_URL}/budget/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Budget deleted successfully', 'success');

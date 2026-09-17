@@ -8,6 +8,8 @@ import {
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const tokens = {
   ink: '#0B1030', ink2: '#141B4D', indigo: '#1E2B7A', indigoLight: '#2E3FA0',
   gold: '#C9A227', goldSoft: '#F6ECC9', canvas: '#F3F4F8', surface: '#FFFFFF',
@@ -79,7 +81,7 @@ export default function CellLeaderDashboard() {
   const fetchCell = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/cell-leader/my-cell', { headers });
+      const res = await axios.get(`${API_URL}/cell-leader/my-cell`, { headers });
       setCell(res.data);
       setMeetingForm({
         meeting_day: res.data.meeting_day || '',
@@ -95,42 +97,42 @@ export default function CellLeaderDashboard() {
 
   const fetchMembers = async () => {
     try {
-      const res = await axios.get('/api/cell-leader/my-cell/members', { headers });
+      const res = await axios.get(`${API_URL}/cell-leader/my-cell/members`, { headers });
       setMembers(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchAnnouncements = async () => {
     try {
-      const res = await axios.get('/api/announcements/', { headers });
+      const res = await axios.get(`${API_URL}/announcements/`, { headers });
       setAnnouncements(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchActivities = async () => {
     try {
-      const res = await axios.get('/api/cell-leader/my-cell/activities', { headers });
+      const res = await axios.get(`${API_URL}/cell-leader/my-cell/activities`, { headers });
       setActivities(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchMyRequests = async () => {
     try {
-      const res = await axios.get('/api/requests/', { headers });
+      const res = await axios.get(`${API_URL}/requests/`, { headers });
       setMyRequests(res.data.filter(r => r.requested_by_id === user?.id));
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchInactiveMembers = async () => {
     try {
-      const res = await axios.get('/api/cell-leader/my-cell/inactive-members', { headers });
+      const res = await axios.get(`${API_URL}/cell-leader/my-cell/inactive-members`, { headers });
       setInactiveMembers(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get('/api/users/me', { headers });
+      const res = await axios.get(`${API_URL}/users/me`, { headers });
       setProfileForm({
         full_name: res.data.full_name || '',
         email: res.data.email || '',
@@ -141,7 +143,7 @@ export default function CellLeaderDashboard() {
 
   const fetchMyHelpRequests = async () => {
     try {
-      const res = await axios.get('/api/cell-leader/my-cell/help-requests', { headers });
+      const res = await axios.get(`${API_URL}/cell-leader/my-cell/help-requests`, { headers });
       setMyHelpRequests(res.data);
     } catch (err) { showToast(getErrorMessage(err)); }
   };
@@ -160,13 +162,13 @@ export default function CellLeaderDashboard() {
     setMemberQuery(q);
     if (!q) { setMemberResults([]); return; }
     try {
-      const res = await axios.get(`/api/cell-leader/members/search?q=${encodeURIComponent(q)}`, { headers });
+      const res = await axios.get(`${API_URL}/cell-leader/members/search?q=${encodeURIComponent(q)}`, { headers });
       setMemberResults(res.data);
     } catch (err) { /* silent */ }
   };
   const addMember = async (memberId) => {
     try {
-      await axios.post(`/api/cell-leader/my-cell/members/${memberId}`, {}, { headers });
+      await axios.post(`${API_URL}/cell-leader/my-cell/members/${memberId}`, {}, { headers });
       showToast('Member added');
       setMemberQuery(''); setMemberResults([]);
       fetchMembers(); fetchCell();
@@ -175,7 +177,7 @@ export default function CellLeaderDashboard() {
   const removeMember = async (memberId) => {
     if (!window.confirm('Remove this member from the cell?')) return;
     try {
-      await axios.delete(`/api/cell-leader/my-cell/members/${memberId}`, { headers });
+      await axios.delete(`${API_URL}/cell-leader/my-cell/members/${memberId}`, { headers });
       showToast('Member removed');
       fetchMembers(); fetchCell();
     } catch (err) { showToast(getErrorMessage(err)); }
@@ -185,7 +187,7 @@ export default function CellLeaderDashboard() {
   const [meetingForm, setMeetingForm] = useState({ meeting_day: '', meeting_time: '', meeting_location: '' });
   const saveMeetingInfo = async () => {
     try {
-      await axios.put('/api/cell-leader/my-cell/meeting-info', meetingForm, { headers });
+      await axios.put(`${API_URL}/cell-leader/my-cell/meeting-info`, meetingForm, { headers });
       showToast('Meeting info updated');
       fetchCell();
     } catch (err) { showToast(getErrorMessage(err)); }
@@ -218,7 +220,7 @@ export default function CellLeaderDashboard() {
   };
   const submitActivity = async () => {
     try {
-      await axios.post('/api/cell-leader/my-cell/activity', {
+      await axios.post(`${API_URL}/cell-leader/my-cell/activity`, {
         ...activityForm,
         attendance: activityForm.attendance ? parseInt(activityForm.attendance) : 0,
         new_members_count: activityForm.new_members_count ? parseInt(activityForm.new_members_count) : 0,
@@ -245,7 +247,7 @@ export default function CellLeaderDashboard() {
   const submitMvp = async () => {
     if (!mvpForm.first_name || !mvpForm.last_name) { showToast('First and last name are required'); return; }
     try {
-      await axios.post('/api/cell-leader/my-cell/register-mvp', mvpForm, { headers });
+      await axios.post(`${API_URL}/cell-leader/my-cell/register-mvp`, mvpForm, { headers });
       showToast(`${mvpForm.first_name} registered as a visitor for follow-up`);
       setMvpForm({ first_name: '', last_name: '', email: '', phone: '', visit_date: new Date().toISOString().split('T')[0], notes: '' });
     } catch (err) { showToast(getErrorMessage(err)); }
@@ -256,7 +258,7 @@ export default function CellLeaderDashboard() {
   const submitRequest = async () => {
     if (!requestForm.amount || !requestForm.description) { showToast('Amount and description are required'); return; }
     try {
-      await axios.post('/api/requests/', {
+      await axios.post(`${API_URL}/requests/`, {
         amount: parseFloat(requestForm.amount),
         purpose: requestForm.purpose,
         description: requestForm.description,
@@ -273,7 +275,7 @@ export default function CellLeaderDashboard() {
   const submitHelp = async () => {
     if (!helpForm.description) { showToast('Please describe what help is needed'); return; }
     try {
-      await axios.post('/api/cell-leader/my-cell/help-requests', helpForm, { headers });
+      await axios.post(`${API_URL}/cell-leader/my-cell/help-requests`, helpForm, { headers });
       showToast('Sent to admin');
       setHelpForm({ description: '' });
       fetchMyHelpRequests();
@@ -309,7 +311,7 @@ export default function CellLeaderDashboard() {
   const saveProfile = async () => {
     setSavingProfile(true);
     try {
-      await axios.put('/api/users/me', profileForm, { headers });
+      await axios.put(`${API_URL}/users/me`, profileForm, { headers });
       showToast('Profile updated');
     } catch (err) { showToast(getErrorMessage(err)); }
     finally { setSavingProfile(false); }
@@ -320,7 +322,7 @@ export default function CellLeaderDashboard() {
     if (passwordForm.new_password !== passwordForm.confirm_password) { showToast('New passwords do not match'); return; }
     setSavingPassword(true);
     try {
-      await axios.post('/api/users/me/change-password', {
+      await axios.post(`${API_URL}/users/me/change-password`, {
         current_password: passwordForm.current_password,
         new_password: passwordForm.new_password,
       }, { headers });

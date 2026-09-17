@@ -10,6 +10,8 @@ import { Add, Edit, Delete, CheckCircle } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const MANAGE_ROLES = ['admin', 'super_admin', 'pastor', 'overall_pastor'];
 
 const getErrorMessage = (err) => {
@@ -72,7 +74,7 @@ const Operations = () => {
       const params = new URLSearchParams();
       if (filterStatus) params.append('status', filterStatus);
       if (filterAssigned) params.append('assigned_to', filterAssigned);
-      const res = await axios.get(`/api/operations/?${params.toString()}`, {
+      const res = await axios.get(`${API_URL}/operations/?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOperations(res.data);
@@ -85,7 +87,7 @@ const Operations = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('/api/users/all', {
+      const res = await axios.get(`${API_URL}/users/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       let usersData = res.data;
@@ -147,12 +149,12 @@ const Operations = () => {
         due_date: formData.due_date ? formData.due_date : null,
       };
       if (editingOp) {
-        await axios.put(`/api/operations/${editingOp.id}`, payload, {
+        await axios.put(`${API_URL}/operations/${editingOp.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Operation updated', 'success');
       } else {
-        await axios.post('/api/operations/', payload, {
+        await axios.post(`${API_URL}/operations/`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Operation created', 'success');
@@ -166,7 +168,7 @@ const Operations = () => {
 
   const handleComplete = async (id) => {
     try {
-      await axios.post(`/api/operations/${id}/complete`, {}, {
+      await axios.post(`${API_URL}/operations/${id}/complete`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       showSnackbar('Operation marked as completed', 'success');
@@ -179,7 +181,7 @@ const Operations = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this operation?')) {
       try {
-        await axios.delete(`/api/operations/${id}`, {
+        await axios.delete(`${API_URL}/operations/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Operation deleted', 'success');

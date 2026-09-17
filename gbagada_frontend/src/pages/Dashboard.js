@@ -43,6 +43,8 @@ import {
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 // Design tokens
 const tokens = {
   ink: '#0B1030',
@@ -271,9 +273,9 @@ export default function Dashboard() {
       // erroring) should not wipe out data from the other two that
       // succeeded. Each result is applied independently below.
       const [statsResult, growthResult, offeringResult] = await Promise.allSettled([
-        axios.get('/api/dashboard/stats', { headers }),
-        axios.get('/api/dashboard/member-growth', { headers }),
-        axios.get('/api/dashboard/offering-trends', { headers }),
+        axios.get(`${API_URL}/dashboard/stats`, { headers }),
+        axios.get(`${API_URL}/dashboard/member-growth`, { headers }),
+        axios.get(`${API_URL}/dashboard/offering-trends`, { headers }),
       ]);
 
       if (statsResult.status === 'fulfilled') {

@@ -10,6 +10,8 @@ import { Add, Edit, Delete } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (typeof err === 'string') return err;
@@ -64,7 +66,7 @@ const Equipment = () => {
       const params = new URLSearchParams();
       if (filterCategory) params.append('category', filterCategory);
       if (filterStatus) params.append('status', filterStatus);
-      const res = await axios.get(`/api/equipment/?${params.toString()}`, {
+      const res = await axios.get(`${API_URL}/equipment/?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEquipment(res.data);
@@ -77,7 +79,7 @@ const Equipment = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('/api/users/all', {
+      const res = await axios.get(`${API_URL}/users/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       let usersData = res.data;
@@ -146,13 +148,13 @@ const Equipment = () => {
       if (editingEq) {
         // status is only meaningful on update — a brand new asset always
         // starts "available" server-side, so we don't send it on create.
-        await axios.put(`/api/equipment/${editingEq.id}`, payload, {
+        await axios.put(`${API_URL}/equipment/${editingEq.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Equipment updated', 'success');
       } else {
         const { status, ...createPayload } = payload;
-        await axios.post('/api/equipment/', createPayload, {
+        await axios.post(`${API_URL}/equipment/`, createPayload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Equipment added', 'success');
@@ -167,7 +169,7 @@ const Equipment = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to deactivate this equipment?')) {
       try {
-        await axios.delete(`/api/equipment/${id}`, {
+        await axios.delete(`${API_URL}/equipment/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         showSnackbar('Equipment deactivated', 'success');

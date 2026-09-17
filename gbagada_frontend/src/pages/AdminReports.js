@@ -9,6 +9,8 @@ import { CheckCircle, ChildCare } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (err.response?.data?.detail) {
@@ -60,13 +62,13 @@ const AdminReports = () => {
     setLoading(true);
     try {
       const [dr, dp, cr, fu, hr, pr, pp] = await Promise.allSettled([
-        axios.get('/api/admin-reports/department-reports', { headers }),
-        axios.get('/api/admin-reports/department-programs', { headers }),
-        axios.get('/api/admin-reports/cell-reports', { headers }),
-        axios.get('/api/admin-reports/follow-ups', { headers }),
-        axios.get('/api/help-requests/', { headers }),
-        axios.get('/api/admin-reports/pastor-reports', { headers }),
-        axios.get('/api/admin-reports/pastor-programs', { headers }),
+        axios.get(`${API_URL}/admin-reports/department-reports`, { headers }),
+        axios.get(`${API_URL}/admin-reports/department-programs`, { headers }),
+        axios.get(`${API_URL}/admin-reports/cell-reports`, { headers }),
+        axios.get(`${API_URL}/admin-reports/follow-ups`, { headers }),
+        axios.get(`${API_URL}/help-requests/`, { headers }),
+        axios.get(`${API_URL}/admin-reports/pastor-reports`, { headers }),
+        axios.get(`${API_URL}/admin-reports/pastor-programs`, { headers }),
       ]);
       if (dr.status === 'fulfilled') setDeptReports(dr.value.data);
       if (dp.status === 'fulfilled') setDeptPrograms(dp.value.data);
@@ -85,14 +87,14 @@ const AdminReports = () => {
   const fetchChildrenSummary = async () => {
     setLoadingChildren(true);
     try {
-      const classesRes = await axios.get('/api/children/classes', { headers });
+      const classesRes = await axios.get(`${API_URL}/children/classes`, { headers });
       const classes = classesRes.data;
 
       const summaries = await Promise.all(classes.map(async (cls) => {
         try {
           const [historyRes, lessonsRes] = await Promise.all([
-            axios.get(`/api/children/classes/${cls.id}/attendance-history`, { headers, params: { limit: 1 } }),
-            axios.get(`/api/children/classes/${cls.id}/lessons`, { headers }),
+            axios.get(`${API_URL}/children/classes/${cls.id}/attendance-history`, { headers, params: { limit: 1 } }),
+            axios.get(`${API_URL}/children/classes/${cls.id}/lessons`, { headers }),
           ]);
           return {
             ...cls,
@@ -114,7 +116,7 @@ const AdminReports = () => {
 
   const resolveHelpRequest = async () => {
     try {
-      await axios.post(`/api/help-requests/${resolveDialog.id}/resolve`, { admin_notes: resolveNotes }, { headers });
+      await axios.post(`${API_URL}/help-requests/${resolveDialog.id}/resolve`, { admin_notes: resolveNotes }, { headers });
       showSnackbar('Marked as resolved');
       setResolveDialog(null);
       setResolveNotes('');

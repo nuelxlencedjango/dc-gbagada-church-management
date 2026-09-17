@@ -15,6 +15,8 @@ import {
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const getErrorMessage = (err) => {
   if (!err) return 'An unknown error occurred.';
   if (typeof err === 'string') return err;
@@ -155,11 +157,11 @@ const Finance = () => {
     try {
       const params = buildParams(f);
       const [transactionsRes, summaryRes] = await Promise.all([
-        axios.get('/api/finance/transactions', {
+        axios.get(`${API_URL}/finance/transactions`, {
           headers: { Authorization: `Bearer ${token}` },
           params
         }),
-        axios.get('/api/finance/summary', {
+        axios.get(`${API_URL}/finance/summary`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { start_date: params.start_date, end_date: params.end_date }
         })
@@ -177,7 +179,7 @@ const Finance = () => {
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
-      const response = await axios.get('/api/users/all', {
+      const response = await axios.get(`${API_URL}/users/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       let usersData = response.data;
@@ -292,7 +294,7 @@ const Finance = () => {
         ...(formData.service_type && { service_type: formData.service_type }),
       };
 
-      await axios.post('/api/finance/transactions', payload, {
+      await axios.post(`${API_URL}/finance/transactions`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       showSnackbar('Transaction recorded successfully', 'success');
@@ -305,7 +307,7 @@ const Finance = () => {
 
   const handleConfirm = async (transactionId) => {
     try {
-      await axios.post(`/api/finance/transactions/${transactionId}/confirm`, {}, {
+      await axios.post(`${API_URL}/finance/transactions/${transactionId}/confirm`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       showSnackbar('Transaction confirmed successfully', 'success');
@@ -317,7 +319,7 @@ const Finance = () => {
 
   const handleApprove = async (transactionId) => {
     try {
-      await axios.post(`/api/finance/transactions/${transactionId}/approve`, {}, {
+      await axios.post(`${API_URL}/finance/transactions/${transactionId}/approve`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       showSnackbar('Expense approved successfully', 'success');

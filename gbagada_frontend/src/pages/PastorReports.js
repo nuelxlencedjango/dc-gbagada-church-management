@@ -7,6 +7,8 @@ import { People, CheckCircle, Cancel, LocationOff } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const PastorReports = () => {
   const { token } = useAuth();
   const [stats, setStats] = useState(null);
@@ -20,7 +22,7 @@ const PastorReports = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/pastors/stats', {
+      const res = await axios.get(`${API_URL}/pastors/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);
