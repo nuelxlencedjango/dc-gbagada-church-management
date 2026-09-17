@@ -10,6 +10,7 @@ from src.api.middleware.auth import get_current_user
 from src.models.user import User
 from src.models.service import Service
 from src.models.department import Department, DepartmentActivity
+from src.models.cell import Cell, CellActivity
 from src.models.announcement import Announcement, AnnouncementType
 from src.services.rag_service import RAGService
 
@@ -94,6 +95,21 @@ def _build_public_context(db: Session) -> str:
         lines = [f"- {d.name}: {d.description}" if d.description else f"- {d.name}" for d in departments]
         parts.append("Departments at Dominion City Gbagada:\n" + "\n".join(lines))
 
+    cells = db.query(Cell).filter(Cell.is_active == True).all()
+    if cells:
+        lines = []
+        for c in cells:
+            meeting_info = []
+            if c.meeting_day:
+                meeting_info.append(c.meeting_day)
+            if c.meeting_time:
+                meeting_info.append(c.meeting_time)
+            if c.meeting_location:
+                meeting_info.append(f"at {c.meeting_location}")
+            meeting_str = f" — meets {' '.join(meeting_info)}" if meeting_info else ""
+            lines.append(f"- {c.name}{meeting_str}")
+        parts.append("Cell groups at Dominion City Gbagada:\n" + "\n".join(lines))
+
     return "\n\n".join(parts)
 
 
@@ -165,6 +181,72 @@ def _build_restricted_context(db: Session, current_user: User) -> str:
     return "\n\n".join(parts)
 
 
+def _build_cell_restricted_context(db: Session, current_user: User) -> str:
+    """Mirrors _build_restricted_context exactly, but for Cells. Cell
+    reports are, if anything, more sensitive than department ones —
+    they include real names of attendees and children present, plus
+    actual offering amounts — so the same strict scoping applies: a
+    Cell Leader only ever sees their own cell(s), never another's."""
+    if current_user.role in MANAGE_ROLES:
+        cells = db.query(Cell).filter(Cell.is_active == True).all()
+    else:
+        cells = db.query(Cell).filter(
+            (Cell.leader_id == current_user.id) | (Cell.assistant_leader_id == current_user.id)
+        ).all()
+
+    if not cells:
+        return ""
+
+    cell_ids = [c.id for c in cells]
+    cell_names = {c.id: c.name for c in cells}
+    parts = []
+
+    roster_lines = []
+    for c in cells:
+        names = [m.first_name + " " + m.last_name for m in c.members]
+        if names:
+            roster_lines.append(f"- {c.name} ({len(names)} members): " + ", ".join(names))
+    if roster_lines:
+        parts.append("Cell member rosters:\n" + "\n".join(roster_lines))
+
+    activities = (
+        db.query(CellActivity)
+        .filter(CellActivity.cell_id.in_(cell_ids))
+        .order_by(CellActivity.week_start_date.desc())
+        .limit(5)
+        .all()
+    )
+    if activities:
+        lines = []
+        for a in activities:
+            cell_name = cell_names.get(a.cell_id, "Unknown Cell")
+            week = a.week_start_date.strftime("%B %d, %Y")
+            details = []
+            if a.attendance is not None:
+                details.append(f"Attendance: {a.attendance}")
+            if a.new_members_count:
+                details.append(f"New members: {a.new_members_count}")
+            if a.testimonies:
+                details.append(f"Testimonies: {a.testimonies}")
+            if a.challenges:
+                details.append(f"Challenges: {a.challenges}")
+            if a.prayer_points:
+                details.append(f"Prayer points: {a.prayer_points}")
+            if a.offering_amount:
+                details.append(f"Offering: ₦{float(a.offering_amount):,.2f}")
+            lines.append(f"- {cell_name}, week of {week}: " + "; ".join(details))
+
+        if current_user.role in MANAGE_ROLES:
+            header = "Internal cell reports across all cells (you have admin-level oversight access):\n"
+        else:
+            own_names = ", ".join(cell_names.values())
+            header = f"Internal reports for the cell(s) {current_user.full_name} personally leads ({own_names}):\n"
+
+        parts.append(header + "\n".join(lines))
+
+    return "\n\n".join(parts)
+
+
 @router.post("/chat", response_model=AIResponse)
 async def chat_with_ai(
     query: AIQuery,
@@ -185,6 +267,9 @@ async def chat_with_ai(
     restricted = _build_restricted_context(db, current_user)
     if restricted:
         live_context = f"{live_context}\n\n{restricted}" if live_context else restricted
+    cell_restricted = _build_cell_restricted_context(db, current_user)
+    if cell_restricted:
+        live_context = f"{live_context}\n\n{cell_restricted}" if live_context else cell_restricted
 
     try:
         answer = _rag_service.query(query.question, user_context, live_context=live_context)
@@ -223,10 +308,3 @@ async def public_chat(query: AIQuery, db: Session = Depends(get_db)):
     except Exception as e:
         print(f"AI Error: {e}")
         return AIResponse(answer="I apologize, but I'm having trouble answering that right now. Please try again later or contact the church office directly.", source="error")
-
-
-
-
-
-
-
