@@ -27,6 +27,10 @@ celery_app.conf.beat_schedule = {
         "task": "src.services.scheduled_tasks.send_daily_birthday_notifications",
         "schedule": crontab(hour=7, minute=0),
     },
+    "daily-hq-website-scrape": {
+        "task": "src.services.scheduled_tasks.scrape_hq_website_daily",
+        "schedule": crontab(hour=3, minute=0),
+    },
 }
 
 celery_app.autodiscover_tasks(["src.services"])

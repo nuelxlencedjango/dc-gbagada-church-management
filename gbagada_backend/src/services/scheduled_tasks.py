@@ -9,12 +9,6 @@ MANAGE_ROLES = ['super_admin', 'overall_pastor', 'pastor', 'admin']
 
 @celery_app.task
 def send_daily_birthday_notifications():
-    """Runs once a day (see beat_schedule in celery.py) — emails a
-    greeting directly to anyone whose birthday is today, and separately
-    sends admin-tier staff a digest so they can also reach out
-    personally. Matched by month/day only, same as the on-demand
-    /members/birthdays/upcoming endpoint — the stored birth year is
-    irrelevant here."""
     db = SessionLocal()
     email_service = EmailService()
     try:
@@ -32,7 +26,6 @@ def send_daily_birthday_notifications():
         if not todays_birthdays:
             return
 
-        # 1. Greet each birthday person directly
         for m in todays_birthdays:
             if m.email:
                 email_service.send_email(
@@ -46,7 +39,6 @@ def send_daily_birthday_notifications():
                     """
                 )
 
-        # 2. Notify staff with a digest so they can reach out personally
         names = ", ".join(f"{m.first_name} {m.last_name}" for m in todays_birthdays)
         staff = db.query(User).filter(
             User.role.in_(MANAGE_ROLES),
@@ -61,3 +53,15 @@ def send_daily_birthday_notifications():
             )
     finally:
         db.close()
+
+
+@celery_app.task
+def scrape_hq_website_daily():
+    from src.services.rag_service import RAGService
+    print("🌐 Running scheduled daily HQ website scrape...")
+    rag_service = RAGService()
+    success = rag_service.scrape_church_hq()
+    if success:
+        print("✅ Scheduled HQ scrape completed successfully")
+    else:
+        print("⚠️ Scheduled HQ scrape did not complete successfully")
