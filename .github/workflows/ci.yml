@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend — install & import check
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ci_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: gbagada_backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify the app imports and starts cleanly
+        working-directory: gbagada_backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci_test_db
+          SECRET_KEY: ci_only_placeholder_key
+          ALGORITHM: HS256
+          ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+          REDIS_URL: redis://localhost:6379/0
+          GROQ_API_KEY: ci_placeholder
+          GROQ_MODEL: openai/gpt-oss-20b
+          RESEND_API_KEY: ci_placeholder
+          FROM_EMAIL: ci@example.com
+          HQ_WEBSITE: https://example.com
+        run: |
+          python -c "from src.main import app; print('✅ Backend imports and initializes cleanly')"
+
+  frontend:
+    name: Frontend — build check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: gbagada_frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: gbagada_frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: gbagada_frontend
+        env:
+          CI: "false"
+          REACT_APP_API_URL: https://dc-gbagada-web.up.railway.app/api
+        run: npm run build
