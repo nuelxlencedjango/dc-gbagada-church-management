@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import {
   AppBar, Toolbar, Typography, Button, IconButton,
-  Menu, MenuItem, Avatar, Box, Chip, Drawer, List,
-  ListItem, ListItemIcon, ListItemText, Divider,
-  Collapse
+  Menu, MenuItem, Avatar, Box, Drawer, List,
+  ListItem, ListItemIcon, ListItemText, Divider
 } from '@mui/material';
 import {
-  Church, Menu as MenuIcon, Dashboard, People, Group,
-  Business, Receipt, Announcement, Settings, Logout,
-  ExpandLess, ExpandMore, PersonAdd, LocationOn, Build,
-  School, TrendingUp, VolunteerActivism, WorkspacePremium
+  Church, Menu as MenuIcon, Dashboard, Logout
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -18,24 +14,7 @@ const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [mobileAnchorEl, setMobileAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState({
-    church: false,
-    cell: false,
-    membership: false,
-    finance: false,
-    operations: false,
-    training: false,
-    mvps: false,
-    pastors: false,
-    satellite: false,
-    settings: false
-  });
-
-  const handleMenuToggle = (menu) => {
-    setOpenMenus({ ...openMenus, [menu]: !openMenus[menu] });
-  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -56,14 +35,16 @@ const Navigation = () => {
     setMobileOpen(false);
   };
 
+  // Deliberately just Dashboard + Logout here — not a fixed list of
+  // admin-only pages. /dashboard already correctly routes anyone to
+  // their own proper portal (DashboardRouter), and that portal has its
+  // own correct, role-appropriate sidebar already. This menu previously
+  // hardcoded /members, /cells, /departments, /finance, /announcements
+  // for every single user regardless of role — a Cell Leader or
+  // Department Head clicking these landed on generic admin pages that
+  // were never meant for them.
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-    { text: 'Members', icon: <People />, path: '/members' },
-    { text: 'Cell Groups', icon: <Group />, path: '/cells' },
-    { text: 'Departments', icon: <Business />, path: '/departments' },
-    { text: 'Finance', icon: <Receipt />, path: '/finance' },
-    { text: 'Announcements', icon: <Announcement />, path: '/announcements' },
-    { text: 'Settings', icon: <Settings />, path: '/settings' },
   ];
 
   const drawer = (
@@ -146,8 +127,8 @@ const Navigation = () => {
             {isAuthenticated ? (
               <>
                 <Button color="inherit" component={Link} to="/dashboard">Dashboard</Button>
-                <Button 
-                  color="inherit" 
+                <Button
+                  color="inherit"
                   onClick={handleMenu}
                   startIcon={
                     <Avatar sx={{ width: 24, height: 24, bgcolor: '#ff6f00' }}>
@@ -163,8 +144,8 @@ const Navigation = () => {
                   onClose={handleClose}
                 >
                   {menuItems.map((item) => (
-                    <MenuItem 
-                      key={item.text} 
+                    <MenuItem
+                      key={item.text}
                       onClick={() => {
                         navigate(item.path);
                         handleClose();
@@ -181,8 +162,8 @@ const Navigation = () => {
             ) : (
               <>
                 <Button color="inherit" component={Link} to="/login">Login</Button>
-                <Button 
-                  color="inherit" 
+                <Button
+                  color="inherit"
                   component={Link} to="/register"
                   sx={{ backgroundColor: '#ff6f00', '&:hover': { backgroundColor: '#e65100' } }}
                 >
