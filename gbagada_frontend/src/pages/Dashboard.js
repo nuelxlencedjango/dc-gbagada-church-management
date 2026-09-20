@@ -248,6 +248,14 @@ function NavItem({ item, isActive, onSelect, isOpen, onToggle }) {
   );
 }
 
+const formatRole = (role) => {
+  if (!role) return 'User';
+  return role
+    .toLowerCase()
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout, token } = useAuth();
@@ -684,7 +692,7 @@ export default function Dashboard() {
           <div className="cd-avatar">{user?.full_name?.[0] || 'A'}</div>
           <div>
             <div className="cd-profile-name">{user?.full_name || 'Admin'}</div>
-            <div className="cd-profile-role">Super Admin</div>
+            <div className="cd-profile-role">{formatRole(user?.role)}</div>
           </div>
         </div>
 
