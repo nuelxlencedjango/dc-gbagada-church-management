@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -17,16 +18,27 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# ✅ IMPORTANT: Set target_metadata to your Base.metadata
+# IMPORTANT: Set target_metadata to your Base.metadata
 from src.config.database import Base
 target_metadata = Base.metadata
 
-# ✅ Import all models so Alembic detects them
+# Import all models so Alembic detects them
 import src.models
 import src.models.budget   # ensure budget model is imported
 
+
+def get_url() -> str | None:
+    """Prefer the real DATABASE_URL env var (set by Railway/Neon in
+    production, or your local .env) over whatever static value is
+    sitting in alembic.ini. Without this, alembic always connects using
+    the ini file's value regardless of environment — which is why this
+    was silently trying 'localhost' inside the Railway container even
+    though DATABASE_URL was set correctly."""
+    return os.getenv("DATABASE_URL")
+
+
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_url() or config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -37,9 +49,16 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 def run_migrations_online() -> None:
+    configuration = config.get_section(config.config_ini_section, {})
+
+    db_url = get_url()
+    if db_url:
+        configuration["sqlalchemy.url"] = db_url
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
@@ -52,6 +71,7 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
