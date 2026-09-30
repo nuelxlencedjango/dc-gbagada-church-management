@@ -58,7 +58,7 @@ import ChildrenDepartment from './pages/ChildrenDepartment';
 import ChildrenOffering from './pages/ChildrenOffering';
 
 import ResetPassword from './pages/ResetPassword';
-
+ import Activities from './pages/Activities';
 //import Reports from './pages/Reports';
 
 // Context
@@ -273,6 +273,13 @@ const AppContent = () => {
             <Announcements />
           </ProtectedRoute>
         } />
+
+        <Route path="/activities" element={
+          <ProtectedRoute>
+            <Activities />
+          </ProtectedRoute>
+        } />
+        
         <Route path="/announcements/add" element={
           <ProtectedRoute>
             <Announcements />

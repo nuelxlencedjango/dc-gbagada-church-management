@@ -127,6 +127,7 @@ const NAV = [
       { label: 'Manage Events', path: '/events' },
       { label: 'Church Services', path: '/services' },
       { label: 'Manage Services', path: '/services/manage' },
+      { label: 'Regular Activities', path: '/activities' },
       { label: 'Announcements', path: '/announcements' },
       { label: 'Reports', path: '/reports' }
     ]

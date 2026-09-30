@@ -407,11 +407,11 @@ const Landing = () => {
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
                 <Phone sx={{ mr: 2, color: '#ff6f00' }} />
-                <Typography>+234-XXX-XXX-XXXX</Typography>
+                <Typography>+234 806 702 4960</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
                 <Email sx={{ mr: 2, color: '#ff6f00' }} />
-                <Typography>info@dominioncitygbagada.com</Typography>
+                <Typography>dcgbagadamedia@gmail.com</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, flexWrap: 'wrap' }}>
                 <LocationOn sx={{ mr: 2, color: '#ff6f00' }} />
