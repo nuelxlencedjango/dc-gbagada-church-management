@@ -54,12 +54,13 @@ from src.models.department_program import DepartmentProgram, DepartmentContribut
 from src.models.member_follow_up import MemberFollowUp
 from src.models.pastor_report import PastorReport, PastorProgram, PastorContribution
 from src.models.cell_activity_agenda import CellActivityAgendaItem
+from src.models.recurring_activity import RecurringActivity
 from src.api.routes.children import router as children_router
-from src.api.routes.children import router as children_router
-
+from src.api.routes.activities import router as activities_router
 
 # ========== DATABASE SETUP ==========
 from src.config.database import engine, Base
+
 
 # Create uploads directory
 uploads_dir = Path("uploads/profile_pictures")
@@ -76,6 +77,7 @@ app = FastAPI(
     version="1.0.0",
    
 )
+
 
 # ========== CORS ==========
 app.add_middleware(
@@ -119,9 +121,15 @@ app.include_router(cell_leader_router, prefix="/api/cell-leader", tags=["Cell Le
 app.include_router(help_requests_router, prefix="/api/help-requests", tags=["Help Requests"])
 app.include_router(admin_reports_router, prefix="/api/admin-reports", tags=["Admin Reports"])
 app.include_router(pastor_portal_router, prefix="/api/pastor-portal", tags=["Pastor Portal"])
-app.include_router(children_router, prefix="/api/children", tags=["children"])
+
+#app.include_router(children_router, prefix="/api/children", tags=["children"])
 app.include_router(children_router, prefix="/api/children", tags=["Children's Department"])
+
+app.include_router(activities_router, prefix="/api/activities", tags=["Activities"])
+
 # ========== STATIC FILES ==========
+
+
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ========== ROOT ENDPOINTS ==========
@@ -159,3 +167,5 @@ async def api_root():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+

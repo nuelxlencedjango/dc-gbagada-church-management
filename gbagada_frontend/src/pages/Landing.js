@@ -5,8 +5,9 @@ import {
   Snackbar, Alert, Chip, IconButton
 } from '@mui/material';
 import {
-  Phone, Email, Facebook, Instagram, YouTube,
-  AccessTime, LocationOn, Church, Message, Twitter, QuestionAnswer, SmartToy
+  Phone, Email, Facebook, Instagram, YouTube, 
+  AccessTime, LocationOn, Church, Message, Twitter, QuestionAnswer, SmartToy,
+  CalendarMonth
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -16,6 +17,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const Landing = () => {
   const [announcements, setAnnouncements] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [openContactDialog, setOpenContactDialog] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
@@ -27,6 +29,7 @@ const Landing = () => {
 
   useEffect(() => {
     fetchAnnouncements();
+    fetchActivities();
   }, []);
 
   const fetchAnnouncements = async () => {
@@ -35,6 +38,15 @@ const Landing = () => {
       setAnnouncements(response.data);
     } catch (error) {
       console.error('Error fetching announcements:', error);
+    }
+  };
+
+  const fetchActivities = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/public/activities`);
+      setActivities(response.data);
+    } catch (error) {
+      console.error('Error fetching activities:', error);
     }
   };
 
@@ -225,6 +237,71 @@ const Landing = () => {
         </Grid>
       </Container>
 
+      {/* Regular Activities */}
+      {activities.length > 0 && (
+        <Box sx={{ backgroundColor: '#f8f9fb', py: { xs: 6, md: 8 } }}>
+          <Container maxWidth="lg">
+            <Typography variant="h3" align="center" gutterBottom sx={{ fontWeight: 600 }}>
+              Regular Activities
+            </Typography>
+            <Typography variant="body1" align="center" color="textSecondary" sx={{ mb: 6 }}>
+              Prayer meetings, communion, and other recurring gatherings
+            </Typography>
+            <Grid container spacing={3} justifyContent="center">
+              {activities.map((activity) => (
+                <Grid item xs={12} sm={6} md={4} key={activity.id}>
+                  <Card sx={{
+                    height: '100%',
+                    textAlign: 'center',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: 6
+                    }
+                  }}>
+                    <CardContent sx={{ p: { xs: 2, md: 4 } }}>
+                      <CalendarMonth sx={{ fontSize: 50, color: '#1a237e', mb: 2 }} />
+                      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                        {activity.title}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500, color: '#1a237e' }}>
+                        {activity.frequency_label}
+                      </Typography>
+                      {activity.time_label && (
+                        <Typography variant="body2" color="textSecondary" gutterBottom>
+                          {activity.time_label}
+                        </Typography>
+                      )}
+                      {!activity.is_virtual && activity.location && (
+                        <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                          {activity.location}
+                        </Typography>
+                      )}
+                      {activity.description && (
+                        <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                          {activity.description}
+                        </Typography>
+                      )}
+                      {activity.link && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          href={activity.link}
+                          target="_blank"
+                          sx={{ mt: 2 }}
+                        >
+                          {activity.is_virtual ? 'Join Online' : 'Get Directions'}
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        </Box>
+      )}
+
       {/* Announcements */}
       {announcements.length > 0 && (
         <Box sx={{ backgroundColor: '#f5f5f5', py: { xs: 4, md: 6 } }}>
@@ -362,7 +439,7 @@ const Landing = () => {
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <IconButton
                   component="a"
-                  href="https://facebook.com/dominioncitygbagada"
+                  href="https://www.facebook.com/mydcgbagada"
                   target="_blank"
                   sx={{
                     backgroundColor: '#3b5998',
@@ -392,7 +469,7 @@ const Landing = () => {
                 </IconButton>
                 <IconButton
                   component="a"
-                  href="https://youtube.com/dominioncitygbagada"
+                  href="https://www.youtube.com/@DominionCityGbagada-ms7se"
                   target="_blank"
                   sx={{
                     backgroundColor: '#ff0000',

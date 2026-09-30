@@ -7,6 +7,7 @@ from src.config.database import get_db
 from src.models.department import Department
 from src.models.cell import Cell
 from src.models.service import Service
+from src.models.recurring_activity import RecurringActivity
 
 router = APIRouter()
 
@@ -53,4 +54,32 @@ async def get_public_services(
             "theme": s.theme,
         }
         for s in services
+    ]
+
+@router.get("/activities")
+async def get_public_activities(
+    db: Session = Depends(get_db)
+):
+    """Recurring church activities for the public homepage (prayer
+    meetings, communion, counselling sessions, etc.) — the kind of
+    thing that used to only live on the church's Linktree page. Only
+    ever returns active ones, in the order the admin set."""
+    activities = (
+        db.query(RecurringActivity)
+        .filter(RecurringActivity.is_active == True)
+        .order_by(RecurringActivity.display_order.asc(), RecurringActivity.id.asc())
+        .all()
+    )
+    return [
+        {
+            "id": a.id,
+            "title": a.title,
+            "frequency_label": a.frequency_label,
+            "time_label": a.time_label,
+            "location": a.location,
+            "is_virtual": a.is_virtual,
+            "link": a.link,
+            "description": a.description,
+        }
+        for a in activities
     ]
