@@ -8,8 +8,7 @@ import {
   Tooltip, FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import {
-  Search, Add, Edit, Delete, Church, LocationOn,
-  Email, Phone, CheckCircle, Cancel
+  Search, Add, Edit, Delete, Church, LocationOn, Email, Phone
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';

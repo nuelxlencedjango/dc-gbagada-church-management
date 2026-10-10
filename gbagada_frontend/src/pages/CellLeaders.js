@@ -8,9 +8,7 @@ import {
   MenuItem, FormControl, InputLabel, Select, Tooltip
 } from '@mui/material';
 import {
-  Search, Person, CheckCircle, Cancel, PersonAdd,
-  Delete, Edit, Visibility, Close, Assignment, Groups,
-  Warning as WarningIcon
+  Search, Person, CheckCircle, Cancel, PersonAdd, Delete, Groups
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -41,6 +39,7 @@ const CellLeaders = () => {
 
   useEffect(() => {
     fetchCells();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCells = async () => {
@@ -218,7 +217,6 @@ const CellLeaders = () => {
   // Check if selected member has a user account
   const selectedMember = formData.member_id ? cellMembers.find(m => m.id === parseInt(formData.member_id)) : null;
   const hasUserAccount = selectedMember?.user_id !== null && selectedMember?.user_id !== undefined && selectedMember?.user_id > 0;
-  const isMemberInCell = selectedMember ? true : false; // will be true if found in cellMembers
 
   if (loading) {
     return (

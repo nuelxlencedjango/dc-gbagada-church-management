@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Box, TextField, IconButton, Paper, Typography,
-  Avatar, CircularProgress, Fab
+  Box, TextField, IconButton, Paper, Typography, CircularProgress, Fab
 } from '@mui/material';
 import { Send, Chat, Close, SmartToy } from '@mui/icons-material';
 import axios from 'axios';

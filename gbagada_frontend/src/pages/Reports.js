@@ -7,10 +7,8 @@ import {
   Alert, Snackbar, useTheme, useMediaQuery
 } from '@mui/material';
 import {
-  FileDownload, Print, People, Business,
-  AttachMoney, TrendingUp, TrendingDown,
-  Refresh, Groups, AccountBalance,
-  CheckCircle, Cancel
+  FileDownload, Print, People, Business, AttachMoney, TrendingUp, Refresh,
+  Groups, AccountBalance, CheckCircle, Cancel
 } from '@mui/icons-material';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -28,7 +26,6 @@ const Reports = () => {
   const { token } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState('members');
@@ -52,6 +49,7 @@ const Reports = () => {
 
   useEffect(() => {
     fetchAllData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAllData = async () => {

@@ -7,8 +7,7 @@ import {
   Grid, Snackbar, Alert, CircularProgress, Card, CardContent
 } from '@mui/material';
 import {
-  Search, Add, Edit, Delete, Visibility, Phone, Email, Person,
-  Close, Upload, PhotoCamera, Cake
+  Search, Add, Edit, Delete, Visibility, Phone, Email, Close, Cake
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';

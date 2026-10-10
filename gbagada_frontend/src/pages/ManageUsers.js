@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Typography, Box, Paper, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, IconButton, Chip,
-  TablePagination, TextField, InputAdornment,
-  Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  Grid, Snackbar, Alert, CircularProgress, Select, MenuItem, FormControl, InputLabel,
-  Tooltip
+  TableContainer, TableHead, TableRow, IconButton, Chip, TablePagination,
+  TextField, InputAdornment, Button, Dialog, DialogTitle, DialogContent,
+  DialogActions, Snackbar, Alert, CircularProgress, Select, MenuItem,
+  FormControl, InputLabel, Tooltip
 } from '@mui/material';
 import {
   Search, Refresh, PersonAdd, Edit, Block, CheckCircle,
@@ -33,6 +32,7 @@ const ManageUsers = () => {
 
   useEffect(() => {
     fetchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUsers = async () => {

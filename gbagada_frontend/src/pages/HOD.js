@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Typography, Box, Paper, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, IconButton, Chip,
-  Avatar, TablePagination, TextField, InputAdornment,
-  Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  Grid, Snackbar, Alert, CircularProgress, MenuItem,
-  FormControl, InputLabel, Select, Tooltip
+  TableContainer, TableHead, TableRow, IconButton, Chip, Avatar,
+  TablePagination, TextField, InputAdornment, Button, Dialog, DialogTitle,
+  DialogContent, DialogActions, Grid, Snackbar, Alert, CircularProgress,
+  MenuItem, FormControl, InputLabel, Select
 } from '@mui/material';
 import {
-  Search, Add, Edit, Delete, Person,
-  Close, PersonAdd, Business, Warning
+  Search, Edit, Delete, Person, PersonAdd, Business
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -35,6 +33,7 @@ const HOD = () => {
 
   useEffect(() => {
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {

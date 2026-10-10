@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container, Typography, Box, Paper, Table, TableBody, TableCell,
-  TableHead, TableRow, IconButton, Chip,
-  TextField, InputAdornment, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, Grid, Snackbar, Alert, CircularProgress, useTheme,
-  useMediaQuery, MenuItem, FormControl, InputLabel, Select,
+  Container, Typography, Box, Paper, Table, TableBody, TableCell, TableHead,
+  TableRow, IconButton, Chip, TextField, InputAdornment, Button, Dialog,
+  DialogTitle, DialogContent, DialogActions, Grid, Snackbar, Alert,
+  CircularProgress, MenuItem, FormControl, InputLabel, Select,
   Checkbox, FormControlLabel, Avatar
 } from '@mui/material';
 import {
@@ -27,7 +26,6 @@ const getErrorMessage = (error) => {
 
 const ChildrenDepartment = () => {
   const { token } = useAuth();
-  const theme = useTheme();
 
   const [view, setView] = useState('classes'); // 'classes' | 'detail'
   const [classes, setClasses] = useState([]);
@@ -69,6 +67,7 @@ const ChildrenDepartment = () => {
     fetchClasses();
     fetchDepartments();
     
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const showSnackbar = (message, severity) => setSnackbar({ open: true, message, severity });

@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container, Typography, Box, Paper, Grid, Card, CardContent,
-  Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, Chip, IconButton, Button, Dialog, DialogTitle,
-  DialogContent, DialogActions, TextField, FormControl,
-  InputLabel, Select, MenuItem, Snackbar, Alert,
-  CircularProgress, Tabs, Tab, Avatar, Divider, Tooltip
+  Container, Typography, Box, Paper, Grid, Card, CardContent, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, Button,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl,
+  InputLabel, Select, MenuItem, Snackbar, Alert, CircularProgress, Tabs, Tab,
+  Avatar, Tooltip
 } from '@mui/material';
 import {
-  Receipt, MoneyOff, TrendingUp, TrendingDown,
-  CheckCircle, Cancel, Pending, Add, Visibility,
-  CreditCard, Payments, AccountBalance, FilterList, Download, Clear
+  TrendingUp, TrendingDown, CheckCircle, Cancel, Pending, Add, Visibility,
+  AccountBalance, FilterList, Download, Clear
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';

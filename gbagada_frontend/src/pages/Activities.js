@@ -33,6 +33,7 @@ const Activities = () => {
 
   useEffect(() => {
     fetchActivities();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchActivities = async () => {

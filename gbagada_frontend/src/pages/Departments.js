@@ -36,6 +36,7 @@ const Departments = () => {
 // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchDepartments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchDepartments = async () => {

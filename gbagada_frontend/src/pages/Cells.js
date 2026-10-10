@@ -9,10 +9,9 @@ import {
   Tooltip
 } from '@mui/material';
 import {
-  Search, Add, Edit, Delete, Visibility, Groups,
-  Close, LocationOn, AccessTime, CheckCircle, Cancel,
-  PersonAdd, PersonRemove, Assignment, EventNote,
-  People, Dashboard, CalendarToday, Person
+  Search, Add, Edit, Delete, Visibility, Groups, Close, LocationOn, AccessTime,
+  CheckCircle, Cancel, PersonAdd, PersonRemove, Assignment, EventNote, People,
+  Dashboard, Person
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -25,7 +24,6 @@ const Cells = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   const [cells, setCells] = useState([]);
   const [members, setMembers] = useState([]);
@@ -69,6 +67,7 @@ const Cells = () => {
 
   useEffect(() => {
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {

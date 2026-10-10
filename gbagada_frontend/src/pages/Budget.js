@@ -6,7 +6,7 @@ import {
   Select, MenuItem, Snackbar, Alert, CircularProgress, Chip,
   Grid, Card, CardContent
 } from '@mui/material';
-import { Add, Edit, Delete, AccountBalance } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -49,6 +49,7 @@ const Budget = () => {
   useEffect(() => {
     fetchBudgets();
     fetchDepartments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchBudgets = async () => {
