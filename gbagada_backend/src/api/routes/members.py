@@ -45,6 +45,7 @@ class MemberResponse(BaseModel):
     user_id: Optional[int] = None
     department_name: Optional[str] = None
     cell_name: Optional[str] = None
+    created_at: Optional[datetime] = None
 
 class CreateUserRequest(BaseModel):
     password: str
@@ -153,7 +154,8 @@ async def get_members(
             "profile_picture_url": member.profile_picture_url,
             "user_id": member.user_id,
             "department_name": member.department.name if member.department else None,
-            "cell_name": member.cell.name if member.cell else None
+            "cell_name": member.cell.name if member.cell else None,
+            "created_at": member.created_at
         })
     
     return result
